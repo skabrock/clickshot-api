@@ -73,6 +73,16 @@ class Post {
       });
   }
 
+  static find({ userId }) {
+    return db
+      .execute("SELECT * FROM posts WHERE creatorId != ?", [userId])
+      .then(([posts]) => {
+        return new Promise((resolve) => {
+          resolve(posts);
+        });
+      });
+  }
+
   static getPostById(id) {
     const postQuery = db.execute("SELECT * FROM posts WHERE id = ?", [id]);
     const commentsQuery = db.execute(
@@ -93,6 +103,10 @@ class Post {
           value: [likes],
         },
       ]) => {
+        if (!post) {
+          throw new Error("No post was found");
+        }
+
         const newPost = { ...post, likes: likes.length, comments };
 
         return new Promise((resolve) => {
@@ -100,6 +114,10 @@ class Post {
         });
       }
     );
+  }
+
+  static deletePostById(id) {
+    return db.execute("DELETE FROM posts WHERE id = ?", [id]);
   }
 }
 

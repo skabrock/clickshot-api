@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 
 const Post = require("../models/post");
+const clearImage = require("../utils/clearImage");
 
 exports.getPosts = function (req, res, next) {
   const currentUser = 10000;
@@ -58,6 +59,23 @@ exports.createPost = function (req, res, next) {
       return res.status(201).json(newPost);
     })
     .catch((err) => next({ ...err, file: mediaUrl }));
+};
+
+exports.deletePost = function (req, res, next) {
+  const { postId } = req.params;
+  let mediaUrl;
+
+  Post.getPostById(postId)
+    .then((post) => {
+      mediaUrl = post.mediaUrl;
+
+      return Post.deletePostById(postId);
+    })
+    .then(() => {
+      clearImage(mediaUrl);
+      res.status(200).json({ message: "Post was deleted" });
+    })
+    .catch((err) => next(err));
 };
 
 exports.addLike = function (req, res, next) {

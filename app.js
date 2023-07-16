@@ -1,9 +1,10 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const dotenv = require("dotenv");
+
+const clearImage = require("./utils/clearImage");
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ app.use((error, req, res, next) => {
   const errors = error.obj;
 
   if (error.file) {
-    fs.unlink(error.file, function () {});
+    clearImage(error.file);
   }
 
   res.status(status).json({ message, errors });
