@@ -9,13 +9,61 @@ class Post {
   }
 
   save() {
-    return db.execute(
-      "INSERT INTO posts (mediaUrl, creatorId, description, createdAt) VALUES (?,?,?,?)",
-      [this.mediaUrl, this.creatorId, this.description, this.createdAt]
-    );
+    return db
+      .execute(
+        "INSERT INTO posts (mediaUrl, creatorId, description, createdAt) VALUES (?,?,?,?)",
+        [this.mediaUrl, this.creatorId, this.description, this.createdAt]
+      )
+      .then(() => {
+        return db
+          .execute("SELECT * FROM posts WHERE id = LAST_INSERT_ID()")
+          .then(([data]) => {
+            return new Promise((resolve) => {
+              resolve(data);
+            });
+          });
+      })
+      .catch(console.log);
   }
 
-  static fetchPosts(userId) {
+  static likePostById(id, userId) {
+    return db
+      .execute("INSERT INTO likes (userId, postId) VALUES (?,?)", [userId, id])
+      .then(() => {
+        return db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
+      })
+      .then(([data]) => {
+        return new Promise((resolve) => {
+          resolve(data.length);
+        });
+      });
+  }
+
+  static dislikePostById(id, userId) {
+    return db
+      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ?", [
+        id,
+        userId,
+      ])
+      .then((data) => {
+        const likeId = data[0]?.[0]?.id;
+        if (likeId) {
+          return db.execute("DELETE FROM likes WHERE id = ?", [likeId]);
+        }
+
+        return;
+      })
+      .then(() => {
+        return db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
+      })
+      .then(([data]) => {
+        return new Promise((resolve) => {
+          resolve(data.length);
+        });
+      });
+  }
+
+  static find({ userId }) {
     return db
       .execute("SELECT * FROM posts WHERE creatorId != ?", [userId])
       .then(([posts]) => {
@@ -25,16 +73,13 @@ class Post {
       });
   }
 
-  static fetchPost(postId) {
-    const postQuery = db.execute("SELECT * FROM posts WHERE id = ?", [postId]);
+  static getPostById(id) {
+    const postQuery = db.execute("SELECT * FROM posts WHERE id = ?", [id]);
     const commentsQuery = db.execute(
       "SELECT * FROM comments WHERE postId = ?",
-      [postId]
+      [id]
     );
-    const likesQuery = db.execute(
-      "SELECT * FROM `post-likes` WHERE postId = ?",
-      [postId]
-    );
+    const likesQuery = db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
 
     return Promise.allSettled([postQuery, commentsQuery, likesQuery]).then(
       ([
