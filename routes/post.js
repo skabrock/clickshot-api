@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { body } = require("express-validator");
 
 const postController = require("../controllers/post");
+const upload = require("../utils/fileStorage");
 
 router.patch("/like/:postId", postController.addLike);
 
@@ -11,11 +12,9 @@ router.get("/:postId", postController.getPost);
 
 router.post(
   "/",
-  [
-    // body("mediaUrl"),
-    body("description").trim().isLength({ min: "5", max: "500" }),
-  ],
-  postController.addPost
+  upload.single("mediaUrl"),
+  body("description").trim().isLength({ min: "5", max: "500" }),
+  postController.createPost
 );
 
 module.exports = router;

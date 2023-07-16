@@ -1,16 +1,19 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const dotenv = require("dotenv");
-// const bodyParser = require("body-parser");
 
 dotenv.config();
 
 const app = express();
 
-// app.use(bodyParser.urlencoded({ extended: true })); // x-www-form-urlencoded <form>
-// app.use(bodyParser.json()); // application/json
+app.use(logger("dev"));
+// app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -21,11 +24,6 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
-app.use(logger("dev"));
-app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
 // ROUTES
 app.use("/posts", require("./routes/posts"));
@@ -38,6 +36,11 @@ app.use((error, req, res, next) => {
   const status = error.statusCode || 500;
   const message = error.message;
   const errors = error.obj;
+
+  if (error.file) {
+    fs.unlink(error.file, function () {});
+  }
+
   res.status(status).json({ message, errors });
 });
 
