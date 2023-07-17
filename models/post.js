@@ -22,58 +22,6 @@ class Post {
       });
   }
 
-  static likePostById(postId, userId) {
-    return db
-      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
-        postId,
-        userId,
-      ])
-      .then(([[like]]) => {
-        if (like) {
-          const error = new Error("Post already liked");
-          error.statusCode = 404;
-          throw error;
-        }
-
-        return db.execute("INSERT INTO likes (userId, postId) VALUES (?,?)", [
-          userId,
-          postId,
-        ]);
-      })
-      .then(() => {
-        return db.execute("SELECT * FROM likes WHERE postId = ?", [postId]);
-      })
-      .then(([data]) => {
-        return data.length;
-      });
-  }
-
-  static dislikePostById(postId, userId) {
-    return db
-      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
-        postId,
-        userId,
-      ])
-      .then(([[like]]) => {
-        if (!like) {
-          const error = new Error("No like was found");
-          error.statusCode = 404;
-          throw error;
-        }
-
-        return db.execute(
-          "DELETE FROM likes WHERE userId = ? AND postID = ? LIMIT 1",
-          [userId, postId]
-        );
-      })
-      .then(() => {
-        return db.execute("SELECT * FROM likes WHERE postId = ?", [postId]);
-      })
-      .then(([data]) => {
-        return data.length;
-      });
-  }
-
   static find({ userId }) {
     return db
       .execute("SELECT * FROM posts WHERE creatorId != ?", [userId])
@@ -148,6 +96,98 @@ class Post {
 
   static deletePostById(id) {
     return db.execute("DELETE FROM posts WHERE id = ?", [id]);
+  }
+
+  static likePost(postId, userId) {
+    return db
+      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
+        postId,
+        userId,
+      ])
+      .then(([[like]]) => {
+        if (like) {
+          const error = new Error("Post already liked");
+          error.statusCode = 404;
+          throw error;
+        }
+
+        return db.execute("INSERT INTO likes (userId, postId) VALUES (?,?)", [
+          userId,
+          postId,
+        ]);
+      })
+      .then(() => {
+        return db.execute("SELECT * FROM likes WHERE postId = ?", [postId]);
+      })
+      .then(([data]) => {
+        return data.length;
+      });
+  }
+
+  static dislikePost(postId, userId) {
+    return db
+      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
+        postId,
+        userId,
+      ])
+      .then(([[like]]) => {
+        if (!like) {
+          const error = new Error("No like was found");
+          error.statusCode = 404;
+          throw error;
+        }
+
+        return db.execute(
+          "DELETE FROM likes WHERE userId = ? AND postID = ? LIMIT 1",
+          [userId, postId]
+        );
+      })
+      .then(() => {
+        return db.execute("SELECT * FROM likes WHERE postId = ?", [postId]);
+      })
+      .then(([data]) => {
+        return data.length;
+      });
+  }
+
+  static savePost(postId, userId) {
+    return db
+      .execute(
+        "SELECT * FROM `post-saves` WHERE postId = ? AND userId = ? LIMIT 1",
+        [postId, userId]
+      )
+      .then(([[saved]]) => {
+        if (saved) {
+          const error = new Error("Post already saved");
+          error.statusCode = 404;
+          throw error;
+        }
+
+        return db.execute(
+          "INSERT INTO `post-saves` (userId, postId) VALUES (?,?)",
+          [userId, postId]
+        );
+      });
+  }
+
+  static removePostFromSave(postId, userId) {
+    return db
+      .execute(
+        "SELECT * FROM `post-saves` WHERE postId = ? AND userId = ? LIMIT 1",
+        [postId, userId]
+      )
+      .then(([[saved]]) => {
+        if (!saved) {
+          const error = new Error("Post hasn't been saved yet");
+          error.statusCode = 404;
+          throw error;
+        }
+
+        return db.execute(
+          "DELETE FROM `post-saves` WHERE userId = ? AND postID = ? LIMIT 1",
+          [userId, postId]
+        );
+      });
   }
 }
 

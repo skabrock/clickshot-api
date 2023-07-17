@@ -125,13 +125,25 @@ exports.deletePost = function (req, res, next) {
 };
 
 exports.addLike = function (req, res, next) {
-  Post.likePostById(req.params.postId, req.userId)
+  Post.likePost(req.params.postId, req.userId)
     .then((likes) => res.status(200).json({ likes }))
     .catch((err) => next(err));
 };
 
 exports.deleteLike = function (req, res, next) {
-  Post.dislikePostById(req.params.postId, req.userId)
+  Post.dislikePost(req.params.postId, req.userId)
     .then((likes) => res.status(200).json({ likes }))
+    .catch((err) => next(err));
+};
+
+exports.addSave = function (req, res, next) {
+  Post.savePost(req.params.postId, req.userId)
+    .then((saves) => res.status(200).json({ saved: true }))
+    .catch((err) => next(err));
+};
+
+exports.deleteSave = function (req, res, next) {
+  Post.removePostFromSave(req.params.postId, req.userId)
+    .then((saves) => res.status(200).json({ saved: false }))
     .catch((err) => next(err));
 };

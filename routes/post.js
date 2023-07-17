@@ -5,9 +5,13 @@ const isAuth = require("../middleware/is-auth");
 const postController = require("../controllers/post");
 const upload = require("../utils/fileStorage");
 
-router.patch("/like/:postId", isAuth, postController.addLike);
+router.post("/like/:postId", isAuth, postController.addLike);
 
-router.patch("/dislike/:postId", isAuth, postController.deleteLike);
+router.delete("/like/:postId", isAuth, postController.deleteLike);
+
+router.post("/save/:postId", isAuth, postController.addSave);
+
+router.delete("/save/:postId", isAuth, postController.deleteSave);
 
 router.get("/:postId", isAuth, postController.getPost);
 
