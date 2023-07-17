@@ -15,13 +15,10 @@ class Post {
         [this.mediaUrl, this.creatorId, this.description, this.createdAt]
       )
       .then(() => {
-        return db
-          .execute("SELECT * FROM posts WHERE id = LAST_INSERT_ID()")
-          .then(([data]) => {
-            return new Promise((resolve) => {
-              resolve(data);
-            });
-          });
+        return db.execute("SELECT * FROM posts WHERE id = LAST_INSERT_ID()");
+      })
+      .then(([[data]]) => {
+        return data;
       });
   }
 
@@ -32,33 +29,30 @@ class Post {
         return db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
       })
       .then(([data]) => {
-        return new Promise((resolve) => {
-          resolve(data.length);
-        });
+        return data.length;
       });
   }
 
   static dislikePostById(id, userId) {
     return db
-      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ?", [
+      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
         id,
         userId,
       ])
-      .then((data) => {
-        const likeId = data[0]?.[0]?.id;
-        if (likeId) {
-          return db.execute("DELETE FROM likes WHERE id = ?", [likeId]);
+      .then(([[{ id: likeId }]]) => {
+        if (!likeId) {
+          const error = new Error("No like was found");
+          error.statusCode(404);
+          throw error;
         }
 
-        return;
+        return db.execute("DELETE FROM likes WHERE id = ?", [likeId]);
       })
       .then(() => {
         return db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
       })
       .then(([data]) => {
-        return new Promise((resolve) => {
-          resolve(data.length);
-        });
+        return data.length;
       });
   }
 
@@ -66,9 +60,7 @@ class Post {
     return db
       .execute("SELECT * FROM posts WHERE creatorId != ?", [userId])
       .then(([posts]) => {
-        return new Promise((resolve) => {
-          resolve(posts);
-        });
+        return posts;
       });
   }
 
@@ -93,7 +85,9 @@ class Post {
         },
       ]) => {
         if (!post) {
-          throw new Error("No post was found");
+          const error = new Error("No post was found");
+          error.statusCode(404);
+          throw error;
         }
 
         const newPost = { ...post, likes: likes.length, comments };
@@ -101,6 +95,35 @@ class Post {
         return new Promise((resolve) => {
           resolve(newPost);
         });
+      }
+    );
+  }
+
+  static updatePostById(id, { mediaUrl, description }) {
+    let newMediaUrl, newDescription;
+
+    db.execute("SELECT * FROM posts WHERE id = ? LIMIT 1", [id]).then(
+      ([[post]]) => {
+        if (!post) {
+          throw new Error("No post was found");
+        }
+
+        newMediaUrl = mediaUrl || post.mediaUrl;
+        newDescription = description || post.description;
+
+        return db
+          .execute(
+            "UPDATE posts SET mediaUrl = ?, description = ? WHERE id = ? LIMIT 1",
+            [newMediaUrl, newDescription, id]
+          )
+          .then(() => {
+            return db.execute("SELECT * FROM posts WHERE id != ? LIMIT 1", [
+              id,
+            ]);
+          })
+          .then(([[post]]) => {
+            return post;
+          });
       }
     );
   }

@@ -15,10 +15,25 @@ router.post(
   "/",
   isAuth,
   upload.single("mediaUrl"),
-  body("description").trim().isLength({ min: "5", max: "500" }),
+  body("description").trim().escape().isLength({ min: "5", max: "500" }),
   postController.createPost
 );
 
-router.delete("/:postId", postController.deletePost);
+router.put(
+  "/:postId",
+  isAuth,
+  upload.single("mediaUrl"),
+  [
+    body("mediaUrl").optional(),
+    body("description")
+      .trim()
+      .optional()
+      .escape()
+      .isLength({ min: "5", max: "500" }),
+  ],
+  postController.updatePost
+);
+
+router.delete("/:postId", isAuth, postController.deletePost);
 
 module.exports = router;

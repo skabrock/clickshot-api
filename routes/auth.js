@@ -29,7 +29,7 @@ router.post(
           }
         });
       }),
-    body("password").trim().isLength({ min: 5, max: 18 }),
+    body("password").trim().isStrongPassword(),
   ],
   userController.createUser
 );
@@ -41,7 +41,7 @@ router.post(
       body("login").trim().isAlphanumeric().isLength({ min: 3, max: 25 }),
       body("login").isEmail(),
     ]),
-    body("password").trim().isLength({ min: 5, max: 18 }),
+    body("password").trim().isLength({ min: 8, max: 100 }),
   ],
   userController.login
 );

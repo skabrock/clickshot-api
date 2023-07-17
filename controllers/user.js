@@ -28,7 +28,9 @@ exports.createUser = function (req, res, next) {
     .then((newUser) => {
       delete newUser.password;
 
-      return res.status(201).json(newUser);
+      return res
+        .status(201)
+        .json({ message: "User registered successfully!", user: newUser });
     })
     .catch((err) => next(err));
 };
