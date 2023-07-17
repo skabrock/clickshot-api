@@ -29,14 +29,15 @@ app.use((req, res, next) => {
 // ROUTES
 app.use("/posts", require("./routes/posts"));
 app.use("/post", require("./routes/post"));
-app.use("/", require("./routes/index"));
+app.use("/auth", require("./routes/auth"));
+app.use("*", require("./routes/404"));
 
 // ERROR HANDLING
 app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
   const message = error.message;
-  const errors = error.obj;
+  const errors = error.data;
 
   if (error.file) {
     clearImage(error.file);

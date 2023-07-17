@@ -37,7 +37,7 @@ exports.createPost = function (req, res, next) {
   if (!validationErrors.isEmpty()) {
     const error = new Error("Validation failed, incorrect data");
     error.statusCode = 422;
-    error.obj = validationErrors.array();
+    error.data = validationErrors.array();
     error.file = mediaUrl;
     throw error;
   }

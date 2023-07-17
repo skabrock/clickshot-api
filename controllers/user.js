@@ -1,19 +1,28 @@
-const db = require("../db");
+const { validationResult } = require("express-validator");
 
-exports.addUser = function (req, res, next) {
-  const email = req.body.email;
+const User = require("../models/user");
+
+exports.createUser = function (req, res, next) {
+  const validationErrors = validationResult(req);
+
+  if (!validationErrors.isEmpty()) {
+    const error = new Error("Validation failed, incorrect data");
+    error.statusCode = 422;
+    error.data = validationErrors.array();
+
+    throw error;
+  }
+
   const username = req.body.username;
-  const name = req.body.name;
+  const email = req.body.email;
   const password = req.body.password;
 
-  console.log([username, name, email, password, ""]);
+  const user = new User(username, email, password);
 
-  db.execute(
-    "INSERT INTO users (username, name, email, password, imageUrl) VALUES (?,?,?,?,?)",
-    [username, name, email, password, ""]
-  )
-    .then(() => {})
-    .catch((err) => console.log(err));
-
-  return res.send("test");
+  user
+    .save()
+    .then((newUser) => {
+      return res.status(201).json(newUser);
+    })
+    .catch((err) => next(err));
 };

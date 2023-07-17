@@ -22,8 +22,7 @@ class Post {
               resolve(data);
             });
           });
-      })
-      .catch(console.log);
+      });
   }
 
   static likePostById(id, userId) {
