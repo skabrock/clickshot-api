@@ -72,16 +72,6 @@ class Post {
       });
   }
 
-  static find({ userId }) {
-    return db
-      .execute("SELECT * FROM posts WHERE creatorId != ?", [userId])
-      .then(([posts]) => {
-        return new Promise((resolve) => {
-          resolve(posts);
-        });
-      });
-  }
-
   static getPostById(id) {
     const postQuery = db.execute("SELECT * FROM posts WHERE id = ?", [id]);
     const commentsQuery = db.execute(
