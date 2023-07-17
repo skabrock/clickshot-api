@@ -49,6 +49,18 @@ class User {
         return Object.values(data)[0];
       });
   }
+
+  // find by email of username
+  static findByLogin(login) {
+    return db
+      .execute("SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1", [
+        login,
+        login,
+      ])
+      .then(([[data]]) => {
+        return data;
+      });
+  }
 }
 
 module.exports = User;

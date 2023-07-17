@@ -1,11 +1,11 @@
 const router = require("express").Router();
-const { body } = require("express-validator");
+const { body, oneOf } = require("express-validator");
 
 const userController = require("../controllers/user");
 const User = require("../models/user");
 
 router.post(
-  "/signup",
+  "/register",
   [
     body("email")
       .isEmail()
@@ -20,7 +20,8 @@ router.post(
       }),
     body("username")
       .trim()
-      .isLength({ min: 3 })
+      .isLength({ min: 3, max: 25 })
+      .isAlphanumeric()
       .custom((value, { req }) => {
         return User.isUniqUserName(value).then((matches) => {
           if (matches) {
@@ -31,6 +32,18 @@ router.post(
     body("password").trim().isLength({ min: 5, max: 18 }),
   ],
   userController.createUser
+);
+
+router.post(
+  "/login",
+  [
+    oneOf([
+      body("login").trim().isAlphanumeric().isLength({ min: 3, max: 25 }),
+      body("login").isEmail(),
+    ]),
+    body("password").trim().isLength({ min: 5, max: 18 }),
+  ],
+  userController.login
 );
 
 module.exports = router;
