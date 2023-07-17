@@ -20,7 +20,7 @@ router.post(
       }),
     body("username")
       .trim()
-      .isLength({ min: 3, max: 25 })
+      .isLength({ min: 3, max: 45 })
       .isAlphanumeric()
       .custom((value, { req }) => {
         return User.isUniqUserName(value).then((matches) => {
@@ -29,7 +29,10 @@ router.post(
           }
         });
       }),
-    body("password").trim().isStrongPassword(),
+    body("password")
+      .trim()
+      .isStrongPassword()
+      .withMessage("please use stronger password"),
   ],
   userController.createUser
 );
@@ -38,7 +41,7 @@ router.post(
   "/login",
   [
     oneOf([
-      body("login").trim().isAlphanumeric().isLength({ min: 3, max: 25 }),
+      body("login").trim().isAlphanumeric().isLength({ min: 3, max: 45 }),
       body("login").isEmail(),
     ]),
     body("password").trim().isLength({ min: 8, max: 100 }),

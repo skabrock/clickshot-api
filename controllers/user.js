@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const compactObject = require("../utils/compactObject");
 
 exports.createUser = function (req, res, next) {
   const validationErrors = validationResult(req);
@@ -26,11 +27,19 @@ exports.createUser = function (req, res, next) {
       return user.save();
     })
     .then((newUser) => {
-      delete newUser.password;
+      delete newUser.hashedPW;
 
-      return res
-        .status(201)
-        .json({ message: "User registered successfully!", user: newUser });
+      const token = jwt.sign(
+        { email: newUser.email, userId: String(newUser.id) },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+      );
+
+      return res.status(201).json({
+        message: "User registered successfully!",
+        token,
+        user: newUser,
+      });
     })
     .catch((err) => next(err));
 };
@@ -81,4 +90,55 @@ exports.login = function (req, res, next) {
       res.status(200).json({ token, user: loadedUser });
     })
     .catch((err) => next(err));
+};
+
+exports.update = function (req, res, next) {
+  const {
+    body: { name, username, email, description },
+    file,
+    userId,
+  } = req;
+
+  const validationErrors = validationResult(req);
+
+  if (!validationErrors.isEmpty()) {
+    const error = new Error("Validation failed, incorrect data");
+    error.statusCode = 422;
+    error.data = validationErrors.array();
+
+    throw error;
+  }
+
+  const mediaUrl = file && file.path;
+
+  const updateUserData = compactObject({
+    name,
+    username,
+    email,
+    description,
+    mediaUrl,
+  });
+
+  if (!Object.keys(updateUserData).length) {
+    const error = new Error("Nothing to update");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  User.find(userId).then((user) => {
+    new User({
+      ...user,
+      ...updateUserData,
+    })
+      .save()
+      .then((updatedUser) => {
+        delete updatedUser.hashedPW;
+
+        return res.status(200).json({
+          message: "User updated successfully!",
+          user: updatedUser,
+        });
+      })
+      .catch((err) => next(err));
+  });
 };

@@ -30,6 +30,7 @@ app.use((req, res, next) => {
 app.use("/posts", require("./routes/posts"));
 app.use("/post", require("./routes/post"));
 app.use("/auth", require("./routes/auth"));
+app.use("/user", require("./routes/user"));
 app.use("*", require("./routes/404"));
 
 // ERROR HANDLING
