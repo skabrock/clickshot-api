@@ -126,16 +126,12 @@ exports.deletePost = function (req, res, next) {
 
 exports.addLike = function (req, res, next) {
   Post.likePostById(req.params.postId, req.userId)
-    .then((likes) => {
-      return res.status(200).json({ likes });
-    })
+    .then((likes) => res.status(200).json({ likes }))
     .catch((err) => next(err));
 };
 
 exports.deleteLike = function (req, res, next) {
   Post.dislikePostById(req.params.postId, req.userId)
-    .then((likes) => {
-      return res.status(200).json({ likes });
-    })
+    .then((likes) => res.status(200).json({ likes }))
     .catch((err) => next(err));
 };

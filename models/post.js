@@ -22,34 +22,52 @@ class Post {
       });
   }
 
-  static likePostById(id, userId) {
+  static likePostById(postId, userId) {
     return db
-      .execute("INSERT INTO likes (userId, postId) VALUES (?,?)", [userId, id])
+      .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
+        postId,
+        userId,
+      ])
+      .then(([[like]]) => {
+        if (like) {
+          const error = new Error("Post already liked");
+          error.statusCode = 404;
+          throw error;
+        }
+
+        return db.execute("INSERT INTO likes (userId, postId) VALUES (?,?)", [
+          userId,
+          postId,
+        ]);
+      })
       .then(() => {
-        return db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
+        return db.execute("SELECT * FROM likes WHERE postId = ?", [postId]);
       })
       .then(([data]) => {
         return data.length;
       });
   }
 
-  static dislikePostById(id, userId) {
+  static dislikePostById(postId, userId) {
     return db
       .execute("SELECT * FROM likes WHERE postId = ? AND userId = ? LIMIT 1", [
-        id,
+        postId,
         userId,
       ])
-      .then(([[{ id: likeId }]]) => {
-        if (!likeId) {
+      .then(([[like]]) => {
+        if (!like) {
           const error = new Error("No like was found");
-          error.statusCode(404);
+          error.statusCode = 404;
           throw error;
         }
 
-        return db.execute("DELETE FROM likes WHERE id = ?", [likeId]);
+        return db.execute(
+          "DELETE FROM likes WHERE userId = ? AND postID = ? LIMIT 1",
+          [userId, postId]
+        );
       })
       .then(() => {
-        return db.execute("SELECT * FROM likes WHERE postId = ?", [id]);
+        return db.execute("SELECT * FROM likes WHERE postId = ?", [postId]);
       })
       .then(([data]) => {
         return data.length;
