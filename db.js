@@ -4,7 +4,7 @@ module.exports = mysql
   .createPool({
     host: "localhost",
     user: "root",
-    database: "clickshot",
-    password: process.env.MYSQL_PASSWORD,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
   })
   .promise();

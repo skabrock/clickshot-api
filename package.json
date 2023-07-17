@@ -1,5 +1,5 @@
 {
-  "name": "clickshot-server",
+  "name": "clickshot-api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
