@@ -51,7 +51,7 @@ exports.createPost = function (req, res, next) {
   const creatorId = req.body.creatorId;
   const description = req.body.description;
 
-  const post = new Post(mediaUrl, creatorId, description);
+  const post = new Post({ mediaUrl, creatorId, description });
 
   post
     .save()

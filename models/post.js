@@ -1,7 +1,7 @@
 const db = require("../db");
 
 class Post {
-  constructor(mediaUrl, creatorId, description) {
+  constructor({ mediaUrl, creatorId, description }) {
     this.mediaUrl = mediaUrl;
     this.creatorId = creatorId;
     this.description = description;

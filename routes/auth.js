@@ -33,6 +33,4 @@ router.post(
   userController.createUser
 );
 
-// router.post("/in", userController.addUser);
-
 module.exports = router;
